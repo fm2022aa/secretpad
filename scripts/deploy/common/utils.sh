@@ -66,8 +66,13 @@ function do_http_probe() {
 	local retry=0
 	while [ $retry -lt "$max_retry" ]; do
 		local status_code
-		status_code=$(docker exec -it "$ctr" curl -k --write-out '%{http_code}' --silent --output /dev/null "${endpoint}")
-		if [[ $status_code -eq 200 || $status_code -eq 404 || $status_code -eq 401 ]]; then
+		status_code=$(docker exec -i "$ctr" curl -k --write-out '%{http_code}' --silent --output /dev/null "${endpoint}" | tr -d '\r')
+		
+		if [[ -z "$status_code" ]]; then
+			status_code=0
+		fi
+
+		if [[ "$status_code" -eq 200 || "$status_code" -eq 404 || "$status_code" -eq 401 ]]; then
 			return 0
 		fi
 		sleep 1
